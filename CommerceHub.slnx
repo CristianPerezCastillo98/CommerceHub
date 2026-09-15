@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="CommerceHub.Api.Tests/CommerceHub.Api.Tests.csproj" Id="c22199be-238c-4623-b6d5-eea5cb882785" />
+  <Project Path="CommerceHub.Api/CommerceHub.Api.csproj" />
+  <Project Path="CommerceHub.Library/CommerceHub.Library.csproj" Id="2046ad72-35ba-428f-9783-e989a091b0dc" />
+  <Project Path="CommerceHub.Persistence/CommerceHub.Persistence.csproj" Id="967513f9-7f7e-466d-93b3-5e5a8e11f54f" />
+</Solution>
