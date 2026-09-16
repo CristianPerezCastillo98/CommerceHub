@@ -9,5 +9,9 @@ public interface IProductService
 
     Task<Product?> GetByIdAsync(long id, CancellationToken cancellationToken);
 
-    Task<Product> CreateAsync(CreateProductRequest request, CancellationToken cancellationToken);
+    Task<Product> CreateAsync(ProductRequest request, CancellationToken cancellationToken);
+
+    Task<Product?> UpdateAsync(long id, ProductRequest newProduct, CancellationToken cancellationToken);
+
+    Task<bool> DeleteAsync(long id, CancellationToken cancellationToken);
 }

@@ -8,5 +8,9 @@ public interface IProductRepository
 
     Task<Product?> GetByIdAsync(long id, CancellationToken cancellationToken);
 
+    Task<Product?> GetTrackedByIdAsync(long id, CancellationToken cancellationToken);
+
     Task CreateAsync(Product product, CancellationToken cancellationToken);
+
+    void Delete(Product product);
 }

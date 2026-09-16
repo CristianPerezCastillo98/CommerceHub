@@ -17,8 +17,18 @@ public class ProductRepository(CommerceHubDbContext context) : IProductRepositor
         return await context.Products.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
+    public Task<Product?> GetTrackedByIdAsync(long id, CancellationToken cancellationToken)
+    {
+        return context.Products.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    }
+
     public async Task CreateAsync(Product product, CancellationToken cancellationToken)
     {
         await context.Products.AddAsync(product, cancellationToken);
+    }
+
+    public void Delete(Product product)
+    {
+        context.Products.Remove(product);
     }
 }

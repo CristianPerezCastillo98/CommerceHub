@@ -17,7 +17,7 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
         return await productRepository.GetByIdAsync(id, cancellationToken);
     }
 
-    public async Task<Product> CreateAsync(CreateProductRequest request, CancellationToken cancellationToken)
+    public async Task<Product> CreateAsync(ProductRequest request, CancellationToken cancellationToken)
     {
         var newProduct = new Product
         {
@@ -32,5 +32,35 @@ public class ProductService(IProductRepository productRepository, IUnitOfWork un
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return newProduct;
+    }
+
+    public async Task<Product?> UpdateAsync(long id, ProductRequest request, CancellationToken cancellationToken)
+    {
+        var product = await productRepository.GetTrackedByIdAsync(id, cancellationToken);
+
+        if (product is null)
+            return null;
+
+        product.Name = request.Name;
+        product.Description = request.Description;
+        product.Price = request.Price;
+        product.Stock = request.Stock;
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return product;
+    }
+
+    public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
+    {
+        var product = await productRepository.GetByIdAsync(id, cancellationToken);
+
+        if (product is null)
+            return false;
+
+        productRepository.Delete(product);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return true;
     }
 }
