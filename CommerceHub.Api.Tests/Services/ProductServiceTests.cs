@@ -9,6 +9,7 @@ namespace CommerceHub.Api.Tests.Services;
 public class ProductServiceTests
 {
     private const long ProductId = 1;
+
     private Mock<IProductRepository> _productRepositoryMock;
     private Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly CancellationToken _cancellationToken = CancellationToken.None;
@@ -37,7 +38,16 @@ public class ProductServiceTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.EqualTo(product));
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Id, Is.EqualTo(product.Id));
+            Assert.That(result.Name, Is.EqualTo(product.Name));
+            Assert.That(result.Description, Is.EqualTo(product.Description));
+            Assert.That(result.Price, Is.EqualTo(product.Price));
+            Assert.That(result.Stock, Is.EqualTo(product.Stock));
+            Assert.That(result.CreatedAt, Is.EqualTo(product.CreatedAt));
+        }
     }
 
     [Test]
@@ -68,22 +78,24 @@ public class ProductServiceTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.CreatedAt, Is.Not.EqualTo(default(DateTime)));
+
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Name, Is.EqualTo(request.Name));
             Assert.That(result.Description, Is.EqualTo(request.Description));
             Assert.That(result.Price, Is.EqualTo(request.Price));
             Assert.That(result.Stock, Is.EqualTo(request.Stock));
+            Assert.That(result.CreatedAt, Is.Not.EqualTo(default(DateTime)));
         }
 
         _productRepositoryMock.Verify(
             repo => repo.CreateAsync(
-                It.Is<Product>(p =>
-                    p.Name == request.Name &&
-                    p.Description == request.Description &&
-                    p.Price == request.Price &&
-                    p.Stock == request.Stock),
+                It.Is<Product>(product =>
+                    product.Name == request.Name &&
+                    product.Description == request.Description &&
+                    product.Price == request.Price &&
+                    product.Stock == request.Stock &&
+                    product.CreatedAt != default),
                 _cancellationToken),
             Times.Once);
 
@@ -116,8 +128,9 @@ public class ProductServiceTests
     {
         // Arrange
         var request = CreateProductRequest();
-        var createdAt = DateTime.UtcNow.AddDays(-10);
         var product = CreateProduct();
+        var createdAt = DateTime.UtcNow.AddDays(-10);
+
         product.CreatedAt = createdAt;
 
         _productRepositoryMock.Setup(repo => repo.GetTrackedByIdAsync(product.Id, _cancellationToken)).ReturnsAsync(product);
@@ -127,6 +140,7 @@ public class ProductServiceTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
+
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Id, Is.EqualTo(product.Id));
@@ -135,6 +149,12 @@ public class ProductServiceTests
             Assert.That(result.Description, Is.EqualTo(request.Description));
             Assert.That(result.Price, Is.EqualTo(request.Price));
             Assert.That(result.Stock, Is.EqualTo(request.Stock));
+
+            Assert.That(product.Name, Is.EqualTo(request.Name));
+            Assert.That(product.Description, Is.EqualTo(request.Description));
+            Assert.That(product.Price, Is.EqualTo(request.Price));
+            Assert.That(product.Stock, Is.EqualTo(request.Stock));
+            Assert.That(product.CreatedAt, Is.EqualTo(createdAt));
         }
 
         _unitOfWorkMock.Verify(unit => unit.SaveChangesAsync(_cancellationToken), Times.Once);

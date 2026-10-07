@@ -1,5 +1,6 @@
 ﻿using CommerceHub.IntegrationTests.Infrastructure;
 using CommerceHub.Library.Models.Request;
+using CommerceHub.Library.Models.Response;
 using CommerceHub.Persistence.Models;
 using System.Net;
 using System.Net.Http.Json;
@@ -37,14 +38,13 @@ public class ProductEndpointTests
     {
         // Act
         using var response = await _client.GetAsync("/api/v1/products");
-        var products = await response.Content.ReadFromJsonAsync<List<Product>>();
+        var products = await response.Content.ReadFromJsonAsync<List<ProductResponse>>();
 
         // Assert
         using (Assert.EnterMultipleScope())
         {
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(products, Is.Not.Null);
-            Assert.That(products, Is.InstanceOf<List<Product>>());
         }
     }
 
@@ -63,7 +63,7 @@ public class ProductEndpointTests
         {
             // Act
             using var response = await _client.GetAsync($"/api/v1/products/{createdProduct.Id}");
-            var retrievedProduct = await response.Content.ReadFromJsonAsync<Product>();
+            var retrievedProduct = await response.Content.ReadFromJsonAsync<ProductResponse>();
 
             // Assert
             using (Assert.EnterMultipleScope())
@@ -108,14 +108,14 @@ public class ProductEndpointTests
     public async Task CreateProduct_WithValidRequest_ShouldReturnCreated()
     {
         // Arrange
-        var request = ProductRequest();
+        var request = CreateProductRequest();
         long? createdProductId = null;
 
         try
         {
             // Act
             using var response = await _client.PostAsJsonAsync("/api/v1/products", request);
-            var product = await response.Content.ReadFromJsonAsync<Product>();
+            var product = await response.Content.ReadFromJsonAsync<ProductResponse>();
 
             // Assert
             using (Assert.EnterMultipleScope())
@@ -156,15 +156,15 @@ public class ProductEndpointTests
     {
         // Arrange
         var product = await _database.CreateProductAsync(CreateProduct());
-        var request = ProductRequest();
+        var request = CreateProductRequest();
 
         try
         {
             // Act
             using var response = await _client.PutAsJsonAsync($"/api/v1/products/{product.Id}", request);
-            var updatedProduct = await response.Content.ReadFromJsonAsync<Product>();
+            var updatedProduct = await response.Content.ReadFromJsonAsync<ProductResponse>();
             using var getResponse = await _client.GetAsync($"/api/v1/products/{product.Id}");
-            var persistedProduct = await getResponse.Content.ReadFromJsonAsync<Product>();
+            var persistedProduct = await getResponse.Content.ReadFromJsonAsync<ProductResponse>();
 
             // Assert
             using (Assert.EnterMultipleScope())
@@ -202,7 +202,7 @@ public class ProductEndpointTests
 
         await _database.DeleteProductAsync(productId);
 
-        var request = ProductRequest();
+        var request = CreateProductRequest();
 
         // Act
         using var response = await _client.PutAsJsonAsync($"/api/v1/products/{productId}", request);
@@ -266,7 +266,7 @@ public class ProductEndpointTests
         };
     }
 
-    private static ProductRequest ProductRequest()
+    private static ProductRequest CreateProductRequest()
     {
         return new ProductRequest
         {

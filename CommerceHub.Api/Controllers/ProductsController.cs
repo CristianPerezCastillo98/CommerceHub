@@ -1,6 +1,6 @@
 ﻿using CommerceHub.Library.Models.Request;
+using CommerceHub.Library.Models.Response;
 using CommerceHub.Library.Services.Interfaces;
-using CommerceHub.Persistence.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CommerceHub.Api.Controllers;
@@ -10,13 +10,13 @@ namespace CommerceHub.Api.Controllers;
 public class ProductsController(IProductService productService) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<List<Product>>> GetProducts(CancellationToken cancellationToken)
+    public async Task<ActionResult<List<ProductResponse>>> GetProducts(CancellationToken cancellationToken)
     {
         return Ok(await productService.GetAllAsync(cancellationToken));
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Product>> GetProduct(long id, CancellationToken cancellationToken)
+    public async Task<ActionResult<ProductResponse>> GetProduct(long id, CancellationToken cancellationToken)
     {
         var product = await productService.GetByIdAsync(id, cancellationToken);
 
@@ -24,7 +24,7 @@ public class ProductsController(IProductService productService) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Product>> CreateProduct([FromBody] ProductRequest product, CancellationToken cancellationToken)
+    public async Task<ActionResult<ProductResponse>> CreateProduct([FromBody] ProductRequest product, CancellationToken cancellationToken)
     {
         var newProduct = await productService.CreateAsync(product, cancellationToken);
 
@@ -32,7 +32,7 @@ public class ProductsController(IProductService productService) : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<Product>> UpdateProduct(long id, [FromBody] ProductRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<ProductResponse>> UpdateProduct(long id, [FromBody] ProductRequest request, CancellationToken cancellationToken)
     {
         var product = await productService.UpdateAsync(id, request, cancellationToken);
 

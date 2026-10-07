@@ -1,54 +1,49 @@
-﻿using CommerceHub.Library.Models.Request;
+﻿using CommerceHub.Library.Mappers;
+using CommerceHub.Library.Models.Request;
+using CommerceHub.Library.Models.Response;
 using CommerceHub.Library.Services.Interfaces;
-using CommerceHub.Persistence.Models;
 using CommerceHub.Persistence.Repositories.Interfaces;
 
 namespace CommerceHub.Library.Services;
 
 public class ProductService(IProductRepository productRepository, IUnitOfWork unitOfWork) : IProductService
 {
-    public async Task<List<Product>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<List<ProductResponse>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return await productRepository.GetAllAsync(cancellationToken);
+        var products = await productRepository.GetAllAsync(cancellationToken);
+
+        return [.. products.Select(product => product.ToResponse())];
     }
 
-    public async Task<Product?> GetByIdAsync(long id, CancellationToken cancellationToken)
+    public async Task<ProductResponse?> GetByIdAsync(long id, CancellationToken cancellationToken)
     {
-        return await productRepository.GetByIdAsync(id, cancellationToken);
+        var product = await productRepository.GetByIdAsync(id, cancellationToken);
+
+        return product?.ToResponse();
     }
 
-    public async Task<Product> CreateAsync(ProductRequest request, CancellationToken cancellationToken)
+    public async Task<ProductResponse> CreateAsync(ProductRequest request, CancellationToken cancellationToken)
     {
-        var newProduct = new Product
-        {
-            Description = request.Description,
-            Name = request.Name,
-            Price = request.Price,
-            Stock = request.Stock,
-            CreatedAt = DateTime.UtcNow,
-        };
+        var product = request.ToProduct();
 
-        await productRepository.CreateAsync(newProduct, cancellationToken);
+        await productRepository.CreateAsync(product, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return newProduct;
+        return product.ToResponse();
     }
 
-    public async Task<Product?> UpdateAsync(long id, ProductRequest request, CancellationToken cancellationToken)
+    public async Task<ProductResponse?> UpdateAsync(long id, ProductRequest request, CancellationToken cancellationToken)
     {
         var product = await productRepository.GetTrackedByIdAsync(id, cancellationToken);
 
         if (product is null)
             return null;
 
-        product.Name = request.Name;
-        product.Description = request.Description;
-        product.Price = request.Price;
-        product.Stock = request.Stock;
+        request.MapTo(product);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return product;
+        return product.ToResponse();
     }
 
     public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
